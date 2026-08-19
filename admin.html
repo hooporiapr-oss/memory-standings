@@ -114,11 +114,11 @@
   <div id="dash">
     <div class="prod-tabs">
       <button class="prod-tab active" id="tab-hooporia" onclick="switchProduct('hooporia')">🏀 Memory Basketball</button>
+      <button class="prod-tab" id="tab-hooporia-standings" onclick="switchProduct('hooporia-standings')">📊 Memory Basketball Standings</button>
       <button class="prod-tab" id="tab-mobile" onclick="switchProduct('mobile')">📱 Mobile</button>
       <button class="prod-tab" id="tab-dynamic-basketball" onclick="switchProduct('dynamic-basketball')">🥽 Dynamic Basketball</button>
       <button class="prod-tab" id="tab-swish-basketball" onclick="switchProduct('swish-basketball')">🎯 Swish Basketball</button>
       <button class="prod-tab" id="tab-swish-standings" onclick="switchProduct('swish-standings')">🏆 Swish Standings</button>
-      <button class="prod-tab" id="tab-hooporia-standings" onclick="switchProduct('hooporia-standings')">📊 Memory Basketball Standings</button>
     </div>
 
     <div class="mobile-note" id="mobile-note">⚠️ Mobile codes work differently: a device stays unlocked permanently once it enters a valid code, using local on-device storage rather than a per-visit check. Revoking or deleting a code here blocks it for any <b>new</b> device — it will not retroactively lock out a device that already unlocked with it.</div>
@@ -271,11 +271,11 @@ window.signOut = async function(){
 window.switchProduct = function(product){
   currentProduct = product;
   $('tab-hooporia').className = 'prod-tab' + (product==='hooporia' ? ' active' : '');
+  $('tab-hooporia-standings').className = 'prod-tab' + (product==='hooporia-standings' ? ' active' : '');
   $('tab-mobile').className = 'prod-tab' + (product==='mobile' ? ' active' : '');
   $('tab-dynamic-basketball').className = 'prod-tab' + (product==='dynamic-basketball' ? ' active' : '');
   $('tab-swish-basketball').className = 'prod-tab' + (product==='swish-basketball' ? ' active' : '');
   $('tab-swish-standings').className = 'prod-tab' + (product==='swish-standings' ? ' active' : '');
-  $('tab-hooporia-standings').className = 'prod-tab' + (product==='hooporia-standings' ? ' active' : '');
   $('mobile-note').className = 'mobile-note' + (product==='mobile' ? ' show' : '');
   var label = product==='hooporia' ? '(Memory Basketball)' : product==='mobile' ? '(Mobile)' : product==='swish-basketball' ? '(Swish Basketball)' : product==='swish-standings' ? '(Swish Standings)' : product==='hooporia-standings' ? '(Memory Basketball Standings)' : '(Dynamic Basketball)';
   $('add-product-label').textContent = label;
@@ -290,6 +290,18 @@ window.switchProduct = function(product){
 // place a shared board can be wiped — behind this page's real login,
 // not a tap any player passing through could reach.
 var STANDINGS_BY_PRODUCT = {
+  'hooporia': [
+    { name: 'Swish', table: 'hooporia_swish_standings' },
+    { name: 'Basketball Recall', table: 'hooporia_basketball_recall_standings' },
+    { name: 'Basketball Reflex', table: 'hooporia_basketball_reflex_standings' },
+    { name: 'Flash', table: 'hooporia_flash_standings' }
+  ],
+  'hooporia-standings': [
+    { name: 'Swish', table: 'hooporia_swish_standings' },
+    { name: 'Basketball Recall', table: 'hooporia_basketball_recall_standings' },
+    { name: 'Basketball Reflex', table: 'hooporia_basketball_reflex_standings' },
+    { name: 'Flash', table: 'hooporia_flash_standings' }
+  ],
   'dynamic-basketball': [
     { name: 'Shoot It. Own It.', table: 'vr_shoot_it_own_it_standings' },
     { name: 'Make It Count.', table: 'vr_make_it_count_standings' }
@@ -299,18 +311,6 @@ var STANDINGS_BY_PRODUCT = {
   ],
   'swish-standings': [
     { name: 'Swish Basketball', table: 'vr_swish_basketball_standings' }
-  ],
-  'hooporia-standings': [
-    { name: 'Swish', table: 'hooporia_swish_standings' },
-    { name: 'Basketball Recall', table: 'hooporia_basketball_recall_standings' },
-    { name: 'Basketball Reflex', table: 'hooporia_basketball_reflex_standings' },
-    { name: 'Flash', table: 'hooporia_flash_standings' }
-  ],
-  'hooporia': [
-    { name: 'Swish', table: 'hooporia_swish_standings' },
-    { name: 'Basketball Recall', table: 'hooporia_basketball_recall_standings' },
-    { name: 'Basketball Reflex', table: 'hooporia_basketball_reflex_standings' },
-    { name: 'Flash', table: 'hooporia_flash_standings' }
   ],
   'mobile': [
     { name: 'The Handle', table: 'ritnome_mobile_handle_standings' }
