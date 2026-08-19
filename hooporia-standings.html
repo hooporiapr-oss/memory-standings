@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+if (sessionStorage.getItem('hooporia-standings-gate-pass') !== '1') {
+  window.location.replace('index.html');
+}
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MEMORY BASKETBALL — STANDINGS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;color:#fff;background:#000;user-select:none;-webkit-user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+
+#screen-box{display:flex;position:fixed;inset:0;z-index:200;flex-direction:column;align-items:center;background:radial-gradient(ellipse at center,#140800 0%,#000 70%);padding:20px 16px 24px;overflow-y:auto}
+.box-title{font-size:1.7rem;font-weight:900;font-style:italic;letter-spacing:.06em;text-transform:uppercase;color:#fff;text-shadow:0 0 40px rgba(255,140,0,.8);margin-bottom:2px}
+.box-title span{color:#00e5ff}
+.box-sub{font-size:.65rem;letter-spacing:.24em;text-transform:uppercase;color:#7c3aed;margin-bottom:18px}
+.box-section{width:100%;margin-bottom:24px}
+.box-section-label{font-size:.65rem;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:#ffd35a;margin-bottom:8px;text-align:left;padding-left:4px}
+.box-table{width:100%;border-collapse:collapse;background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.3);border-radius:12px;overflow:hidden}
+.box-empty{color:#7fa8c0;font-size:.85rem;padding:24px 8px;font-style:italic}
+.box-back-btn{align-self:flex-start;padding:8px 16px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;cursor:pointer;margin-bottom:20px}
+
+.standings-row{font-size:.8rem;color:#9fb3c8;padding:10px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px;cursor:pointer}
+.standings-row:last-child{border-bottom:none}
+.standings-row:active{background:rgba(124,58,237,.08)}
+.standings-rank{font-weight:900;font-size:1.05rem;color:#7c3aed;min-width:28px}
+.standings-row.rank-1 .standings-rank{color:#ffd35a}
+.standings-row.rank-2 .standings-rank{color:#c4b5fd}
+.standings-row.rank-3 .standings-rank{color:#fb923c}
+.standings-name{flex:1;color:#fff;font-weight:700;text-align:left}
+.standings-pts{color:#00e5ff;font-weight:900;font-size:1rem}
+.standings-bpm{color:#9fb3c8;font-size:.72rem;min-width:64px;text-align:right}
+
+.tap-log{display:flex;flex-wrap:wrap;gap:4px;padding:10px;background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.25);border-radius:12px;margin-top:8px}
+.tap-chip{flex:0 0 auto;min-width:44px;padding:4px 6px;border-radius:7px;text-align:center;font-family:Arial,Helvetica,sans-serif;font-size:.62rem;font-weight:900;line-height:1.3}
+.tap-chip.hit{background:rgba(124,58,237,.22);border:1px solid rgba(124,58,237,.5);color:#c4b5fd}
+.tap-chip.miss{background:rgba(255,20,147,.16);border:1px solid rgba(255,20,147,.4);color:#ff8fb8}
+.tap-chip .tap-bpm{display:block;font-size:.68rem}
+.tap-chip .tap-pts{display:block;opacity:.85;font-size:.58rem;margin-top:1px}
+.tap-log-total{width:100%;text-align:center;margin-top:0;padding:8px 14px 14px;border-top:1px solid rgba(124,58,237,.25);font-size:.85rem;font-weight:900;color:#fff}
+.tap-log-total b{color:#00e5ff;font-size:1.1rem}
+.tap-log-empty{color:#7fa8c0;font-size:.75rem;font-style:italic;padding:8px}
+
+/* Game switcher — same visual language as the actual games' own
+   switcher, since this is choosing between the same four games,
+   just for viewing standings rather than playing. */
+.game-switcher{display:flex;gap:8px;max-width:600px;width:100%;margin:0 0 22px}
+.switcher-btn{flex:1;padding:10px 4px;border-radius:12px;text-decoration:none;text-align:center;font-size:.68rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase;line-height:1.3;border:2px solid rgba(255,107,53,.5);background:rgba(255,107,53,.12);color:#ffb38a;cursor:pointer}
+.switcher-btn.current{border-color:rgba(255,107,53,.8);background:rgba(255,107,53,.28);color:#fff}
+
+#exitBtn{
+  position:fixed;top:16px;right:16px;z-index:20;
+  padding:8px 16px;border-radius:999px;border:2px solid rgba(255,255,255,.25);
+  background:rgba(0,0,0,.5);color:#fff;font-size:.78rem;font-weight:900;
+  letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+}
+</style>
+
+</head>
+<body>
+
+<div id="screen-box">
+  <button class="box-back-btn" id="refreshBtn" type="button">🔄 Refresh</button>
+  <button id="exitBtn" type="button">Exit →</button>
+  <div class="box-title">THE <span>STANDINGS</span></div>
+  <div class="box-sub" id="boxSub">Memory Basketball · Player vs. Player</div>
+
+  <div class="game-switcher" id="gameSwitcher"></div>
+
+  <div style="width:100%;max-width:600px">
+    <div class="box-section">
+      <div class="box-section-label" id="sectionLabel">Standings — Best Score Per Player</div>
+      <div class="box-table" id="standingsList" style="border-radius:12px"></div>
+      <div class="tap-log" id="standingsTapLog" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function $(id){return document.getElementById(id)}
+
+var SB_URL='https://sdaphocueugzfvjovuxd.supabase.co';
+var SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNkYXBob2N1ZXVnemZ2am92dXhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2MjQyMDgsImV4cCI6MjA5OTIwMDIwOH0.pDAzf4P6dD9eNEBlnP95SdF5BI-R84-Rdc0vKzYcn7M';
+
+// The same four games, same table names, already established in
+// admin.html's own standings config — kept in this same order to
+// match the actual games' own switcher for familiarity.
+var GAMES = [
+  {name:'Swish', table:'hooporia_swish_standings'},
+  {name:'Recall', table:'hooporia_basketball_recall_standings'},
+  {name:'Reflex', table:'hooporia_basketball_reflex_standings'},
+  {name:'Flash', table:'hooporia_flash_standings'}
+];
+var currentGameIndex = 0;
+
+function fetchStandings(table){
+  var school=sessionStorage.getItem('hooporia-standings-school')||'';
+  var url=SB_URL+'/rest/v1/'+table+'?select=player_name,score,made,attempts,avg_ms,shots&order=score.desc&school_name=eq.'+encodeURIComponent(school);
+  return fetch(url,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}})
+    .then(function(r){if(!r.ok)throw new Error('bad response');return r.json()})
+    .then(function(rows){
+      var best={};
+      (rows||[]).forEach(function(r){
+        var existing=best[r.player_name];
+        if(!existing||r.score>existing.pts){
+          best[r.player_name]={name:r.player_name,pts:r.score,made:r.made,attempts:r.attempts,ms:r.avg_ms,shots:r.shots||[]};
+        }
+      });
+      return Object.keys(best).map(function(n){return best[n]}).sort(function(a,b){return b.pts-a.pts});
+    });
+}
+
+function renderTapLog(container,shots,finalScore){
+  if(!shots||!shots.length){
+    container.innerHTML='<div class="tap-log-empty">No round-by-round detail saved for this game.</div>';
+    return;
+  }
+  var chips=shots.map(function(s){
+    if(s.hit){
+      return '<div class="tap-chip hit"><span class="tap-bpm">ROUND '+s.round+'</span><span class="tap-pts">+'+s.pts+'</span></div>';
+    }
+    return '<div class="tap-chip miss"><span class="tap-bpm">ROUND '+s.round+'</span><span class="tap-pts">MISS</span></div>';
+  }).join('');
+  container.innerHTML=chips+'<div class="tap-log-total">Final Score: <b>'+finalScore+' PTS</b></div>';
+}
+
+function renderStandings(){
+  var game=GAMES[currentGameIndex];
+  var listEl=$('standingsList');
+  var tapLogEl=$('standingsTapLog');
+  tapLogEl.style.display='none';
+  listEl.innerHTML='<div class="box-empty">Loading standings…</div>';
+  $('sectionLabel').textContent=game.name+' — Best Score Per Player';
+
+  fetchStandings(game.table).then(function(ranked){
+    var openRowName=null;
+    if(!ranked.length){
+      listEl.innerHTML='<div class="box-empty">No players yet — be the first name on the board.</div>';
+      return;
+    }
+    listEl.innerHTML=ranked.map(function(p,i){
+      var rankClass=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
+      var safeName=p.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      return '<div class="standings-row '+rankClass+'" data-name="'+safeName+'">'
+        +'<span class="standings-rank">'+(i+1)+'</span>'
+        +'<span class="standings-name">'+safeName+'</span>'
+        +'<span class="standings-bpm">'+(p.made>0?p.made+' rounds':'')+'</span>'
+        +'<span class="standings-pts">'+p.pts+'</span>'
+        +'</div>';
+    }).join('');
+    listEl.querySelectorAll('.standings-row').forEach(function(row){
+      row.addEventListener('click',function(){
+        var name=row.dataset.name;
+        if(openRowName===name){
+          tapLogEl.style.display='none';
+          openRowName=null;
+          return;
+        }
+        openRowName=name;
+        var p=ranked.find(function(r){return r.name===name});
+        renderTapLog(tapLogEl,p.shots,p.pts);
+        tapLogEl.style.display='flex';
+        row.insertAdjacentElement('afterend',tapLogEl);
+      });
+    });
+  }).catch(function(){
+    listEl.innerHTML='<div class="box-empty">Couldn\'t load standings right now — try again in a moment.</div>';
+  });
+}
+
+function switchGame(index){
+  currentGameIndex=index;
+  renderSwitcher();
+  renderStandings();
+}
+
+function renderSwitcher(){
+  $('gameSwitcher').innerHTML=GAMES.map(function(g,i){
+    var cls='switcher-btn'+(i===currentGameIndex?' current':'');
+    return '<button class="'+cls+'" onclick="switchGame('+i+')">'+g.name+'</button>';
+  }).join('');
+}
+
+var schoolName=sessionStorage.getItem('hooporia-standings-school');
+if(schoolName){document.getElementById('boxSub').textContent=schoolName+' · Player vs. Player';}
+renderSwitcher();
+renderStandings();
+document.getElementById('refreshBtn').addEventListener('click', renderStandings);
+document.getElementById('exitBtn').addEventListener('click', function(){
+  sessionStorage.removeItem('hooporia-standings-gate-pass');
+  window.location.href = 'index.html';
+});
+// A display board left running for a whole class period or a full
+// day shouldn't need someone standing there clicking Refresh to keep
+// it current. This keeps whichever game is currently selected honest
+// on its own, without switching away from what's being viewed.
+setInterval(renderStandings, 30000);
+</script>
+
+</body>
+</html>
